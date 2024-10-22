@@ -1,0 +1,59 @@
+Quality Control Checks Documentation
+
+Overview
+This Quality Control (QC) Tool is designed to run a series of checks on digital assets across different departments (such as Modeling, Rigging, and Animation) within a production pipeline. 
+It reports any issues or warnings and offers the user the option to automatically fix these issues, rerun the checks, or publish the asset despite any unresolved problems.
+The tool provides a user interface (UI) within Maya, making it easy for users to view failed checks, warnings, and passed checks, and to take appropriate action before asset publishing.
+Main Features:
+    • Department-specific Checks: Runs a variety of QC checks depending on the department (e.g., Modeling, Rigging, Animation).
+    • Report Generation: Displays a report summarizing the checks, including pass, warning, and fail counts.
+    • Automatic Fixes: Allows users to automatically resolve issues identified during the checks.
+    • Manual Selection: Users can rerun checks selectively on specific items.
+    • Publishing: Assets can be published even if some checks have failed, depending on the user's discretion.
+
+Installation
+To use the tool, ensure that it is integrated within Maya. The tool relies on external modules for each department's checks and imports them dynamically during runtime.
+
+Usage
+Launching the Tool
+    1. Initialize the Tool:
+        ◦ The QC tool can be initiated from Maya by loading the UI via the QCChecks class, which loads the user interface and presents available checklists.
+    2. Parenting the UI:
+        ◦ The UI is parented to Maya’s main window for a seamless user experience.
+User Interface Overview
+The UI consists of the following elements:
+    • Fix This Button: Automatically fixes selected issues.
+    • Department Dropdown Menu: Allows selection of departments (Modeling, Rigging, Animation).
+    • QC List Widget: Displays the list of available QC checks.
+    • Run Selected Button: Runs checks on selected items.
+    • Status Labels: Displays the number of passed, warning, and failed checks.
+    • Results Window: Displays detailed results from each QC check.
+    • Selection Buttons: Allows users to select all, deselect all, or invert the selection of QC checks.
+    • Publish Button: Publishes the asset after running or fixing the QC checks.
+Running Checks
+    1. Selecting a Department:
+        ◦ Choose the relevant department from the dropdown menu (e.g., Modeling).
+    2. Selecting QC Checks:
+        ◦ Select which checks to run from the checklist provided in the QC List Widget.
+    3. Running the QC Checks:
+        ◦ Click the Run Selected button to run the selected QC checks for the chosen department. Results will be displayed in the Results Window.
+    4. Fixing Issues:
+        ◦ If any issues are detected, click the Fix This button to automatically fix the selected issues. If the tool cannot fix the issue, a warning or failure will remain, requiring manual intervention.
+    5. Viewing Results:
+        ◦ The Results Window will display a summary of the check results, detailing which checks passed, triggered warnings, or failed.
+        ◦ The Passed, Warning, and Failed labels will update based on the results.
+    6. Publishing the Asset:
+        ◦ After running the checks and resolving any issues, click the Publish button to save and publish the asset.
+
+Quality Control Modules
+The tool supports different checks depending on the department:
+Modeling Department
+    • Animated Objects Check: Verifies that no unexpected animations exist on objects within the scene.
+    • Center Check: Ensures that all objects are centered correctly.
+    • Freeze Transform Check: Verifies that transforms are frozen on objects where required.
+    • Scene Cleanup Check: Ensures that the scene is free of unnecessary nodes or illegal elements.
+Rigging Department
+    • 
+Animation Department
+    • 
+
