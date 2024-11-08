@@ -1,18 +1,33 @@
-# Modeling Animated Objects Check ************************************************************
-# 
-# This is the quality check "animated objects". It checks if the asset has keyframes.
+# **************************************************************************************************************
+# content       = checks if the asset has keyframes
 #
-# date    = 2024-08-30
+# how to        =
+# dependencies  = Maya
+# to dos        =
+#
 # author  = Stephane Barbin
-#*********************************************************************************************
+# **************************************************************************************************************
 
 
 
-# Importing modules
 import maya.cmds as cmds
 
-# Function to return animated attributes
+
+
+# **************************************************************************************************************
+
+
+
 def list_animated_attributes(obj):
+    """
+    Returns information about animation keys on meshes object in scene
+
+    Args:
+        obj (str): mesh object's name
+
+    Returns:
+        list: names of the mesh object's animated attributes
+    """
     # Getting all animatable attributes of the object
     animatable_attrs = cmds.listAnimatable(obj)
     
@@ -35,8 +50,18 @@ def delete_keyframes(obj, attribute):
     cmds.cutKey(full_attribute, clear=True)
 
 
-# Function for the modeling qc animated objects check
 def animated_objects(button_clicked):
+    """
+    Main function called from the UI to check if objects have animated attributes
+
+    Args:
+        button_clicked (str): Contains info on the button pressed i.e.: 'Run' or 'Fix'
+
+    Returns:
+        str: Status of the qc check i.e.: passed, warning or failed
+        dict: Report of names and animated attributes info of each object when check fails
+        int: A flag sent back to the main: 0 for passed, 1 for failed
+    """
     status_flag = 'passed'
     default_cameras = ['persp', 'top', 'front', 'side']
     button_switch = 0
@@ -100,4 +125,7 @@ def animated_objects(button_clicked):
             for attr in animated_attribs:
                 delete_keyframes(transform, attr)
     
-    return status_flag, animated_objects_report, button_switch
+    return (status_flag,
+            animated_objects_report,
+            button_switch
+            )

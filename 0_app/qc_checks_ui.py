@@ -1,52 +1,63 @@
-
-# Quality Control Checks UI *********************************************************************
-# 
-# This is the UI for the Quality Control Checks, performed by department users.
-# It gives the user the ability to see a report based on checks that fails, select
-# the checks they want to resolve automatically with a "Fix This" button, run a selected check
-# again, and "Publish" when all is "passed".
+# **************************************************************************************************************
+# content       = UI
 #
-# date    = 2024-08-30
+# how to        =
+# dependencies  = Maya
+# to dos        =
+#
 # author  = Stephane Barbin
-#*********************************************************************************************
+# **************************************************************************************************************
 
 
-# QUALITY CONTROL CHECKS UI (qc)
-# ____________________________________________________________________________________________
+
+from PySide2 import QtGui
+from PySide2 import QtCore
+from PySide2 import QtWidgets
 
 
-# IMPORTING MODULES
-from PySide2 import QtWidgets, QtCore, QtGui
 
-
-# ____________________________________________________________________________________________
+# **************************************************************************************************************
 
 
 
 def qc_checks_ui():
+    """
+    This is the UI for the Quality Control Checks, performed by department users.
+    :return: Ui widgets
+    """
 
-    # FUNCTIONS
-    # Select All
+    # SELECT CHECKS
     def select_all():
+        """
+        Selected all items in list widget.
+        """
         for qc_list in range(qc_list_widget.count()):
             list_item = qc_list_widget.item(qc_list)
             list_item.setSelected(True)
 
-    # Select None
     def select_none():
+        """
+        Clears selection in list widget.
+        """
         qc_list_widget.clearSelection()
 
-    # Invert Selection
     def invert_selection():
+        """
+        Inverts the selection in list widget.
+        """
         for qc_list in range(qc_list_widget.count()):
             list_item = qc_list_widget.item(qc_list)
             list_item.setSelected(not list_item.isSelected())
 
-    # Department choice
+
+    # CHOOSE DEPARTMENTS
     def department_selection():
+        """
+        UI logic when department is changed.
+        """
         qc_list_widget.clear()
         selected_department = department_menu.currentText()
-        
+
         if selected_department == 'Modeling':
             qc_list_widget.addItems([
                                     "Animated Objects",
@@ -78,33 +89,28 @@ def qc_checks_ui():
             qc_list_widget.sortItems()
 
 
-    # Create a QWidget for the main window
     qc_window = QtWidgets.QWidget()
 
 
-    # Set window title and size
     qc_window.setWindowTitle("Quality Control Checks")
     qc_window.setGeometry(600, 200, 500, 700)
 
 
-    # Create the main layout
     main_layout = QtWidgets.QVBoxLayout(qc_window)
 
 
-    # Department dropdown menu
     department_menu = QtWidgets.QComboBox()
     department_menu.addItems(["Modeling", "Rigging", "Animation"])
     main_layout.addWidget(department_menu)
 
 
-    # Qality Control Checks list title
     qc_title = QtWidgets.QLabel("Quality Control Check List")
     qc_title.setAlignment(QtCore.Qt.AlignCenter)
     qc_title.setFont(QtGui.QFont("Arial", 14, QtGui.QFont.Bold))
     main_layout.addWidget(qc_title)
 
 
-    # List of Quality Control Checks per department
+    # LIST PER DEPARTMENT
     qc_list_widget = QtWidgets.QListWidget()
     qc_list_widget.addItems([
                             "Animated Objects",
@@ -117,7 +123,7 @@ def qc_checks_ui():
     main_layout.addWidget(qc_list_widget)
 
 
-    # Buttons "Select All", "Select None", "Invert Selection"
+    # BUTTONS
     select_btn_layout = QtWidgets.QHBoxLayout()
     select_all_btn = QtWidgets.QPushButton("Select All")
     select_none_btn = QtWidgets.QPushButton("Select None")
@@ -128,17 +134,15 @@ def qc_checks_ui():
     main_layout.addLayout(select_btn_layout)
 
 
-    # Button "Run Selected"
     run_selected_btn = QtWidgets.QPushButton("Run Selected")
     main_layout.addWidget(run_selected_btn)
 
 
-    # Button "Fix This"
     fix_this_btn = QtWidgets.QPushButton("Fix This")
     main_layout.addWidget(fix_this_btn)
 
 
-    # Status labels with background colors
+    # STATUS
     status_layout = QtWidgets.QHBoxLayout()
     passed_label = QtWidgets.QLabel("Passed: 0")
     passed_label.setStyleSheet("background-color: green; color: white; padding: 5px;")
@@ -152,23 +156,34 @@ def qc_checks_ui():
     main_layout.addLayout(status_layout)
 
 
-    # Window for checks report
+    # CHECKS REPORT
     results_window = QtWidgets.QTextEdit()
     results_window.setReadOnly(True)
     main_layout.addWidget(results_window)
 
-    # Button "Publish"
+
     publish_btn = QtWidgets.QPushButton("Publish")
     main_layout.addWidget(publish_btn)
 
 
-    # Button connection to functions
+    # CONNECTION TO FUNCTIONS
     select_all_btn.clicked.connect(select_all)
     select_none_btn.clicked.connect(select_none)
     invert_selection_btn.clicked.connect(invert_selection)
     department_menu.currentIndexChanged.connect(department_selection)
 
-    return (qc_window, fix_this_btn, department_menu, qc_list_widget, 
-            run_selected_btn, passed_label, warning_label, failed_label, results_window,
-            select_all_btn, select_none_btn, invert_selection_btn, publish_btn)
-
+    return (
+        qc_window,
+        fix_this_btn,
+        department_menu,
+        qc_list_widget,
+        run_selected_btn,
+        passed_label,
+        warning_label,
+        failed_label,
+        results_window,
+        select_all_btn,
+        select_none_btn,
+        invert_selection_btn,
+        publish_btn
+        )
