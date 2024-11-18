@@ -1,18 +1,35 @@
-# Scene Cleanup Check ************************************************************************
-# 
-# This is the quality check "scene cleanup". It checks for modeling department's illegal objects.
+# **************************************************************************************************************
+# content       = checks for modeling department's illegal objects
 #
-# date    = 2024-08-30
+# how to        =
+# dependencies  = Maya
+# to dos        =
+#
 # author  = Stephane Barbin
-#*********************************************************************************************
+# **************************************************************************************************************
 
 
 
-# Importing modules
 import maya.cmds as cmds
 
-# Function for the modeling qc illegal objects check
+
+
+# **************************************************************************************************************
+
+
+
 def illegal_cleanup(button_clicked):
+    """
+    Main function called from the UI to check for illegal objects
+
+    Args:
+        button_clicked (str): Contains info on the button pressed i.e.: 'Run' or 'Fix'
+
+    Returns:
+        str: Status of the qc check i.e.: passed, warning or failed
+        dict: Report of illegal object's name if check fails
+        int: A flag sent back to the main: 0 for passed, 1 for failed
+    """
     status_flag = 'passed'
     default_cameras = ['persp', 'top', 'front', 'side']
     button_switch = 0
@@ -72,4 +89,7 @@ def illegal_cleanup(button_clicked):
             transform_object = cmds.listRelatives(asset_mesh, parent=True)[0]
             cmds.delete(transform_object)
             
-    return status_flag, cleanup_report, button_switch
+    return (status_flag,
+            cleanup_report,
+            button_switch
+            )

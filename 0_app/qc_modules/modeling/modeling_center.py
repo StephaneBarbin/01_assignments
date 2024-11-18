@@ -1,18 +1,35 @@
-# Modeling Center Check **********************************************************************
-# 
-# This is the quality check "center". It checks if the asset is in the world center.
+# **************************************************************************************************************
+# content       = checks if the asset is in the world center
 #
-# date    = 2024-08-30
+# how to        =
+# dependencies  = Maya
+# to dos        =
+#
 # author  = Stephane Barbin
-#*********************************************************************************************
+# **************************************************************************************************************
 
 
 
-# Importing modules
 import maya.cmds as cmds
 
-# Function for the modeling qc center check
+
+
+# **************************************************************************************************************
+
+
+
 def meshes_center(button_clicked):
+    """
+    Main function called from the UI to check if objects are centered in world
+
+    Args:
+        button_clicked (str): Contains info on the button pressed i.e.: 'Run' or 'Fix'
+
+    Returns:
+        str: Status of the qc check i.e.: passed, warning or failed
+        dict: Report of names and translation coordinates info of each object when check fails
+        int: A flag sent back to the main: 0 for passed, 1 for failed
+    """
     # Initializing
     status_flag = 'passed'
     default_cameras = ['persp', 'top', 'front', 'side']
@@ -78,4 +95,7 @@ def meshes_center(button_clicked):
             cmds.setAttr(transform + '.translateY', 0)
             cmds.setAttr(transform + '.translateZ', 0)
     
-    return status_flag, center_report, button_switch
+    return (status_flag,
+            center_report,
+            button_switch
+            )
