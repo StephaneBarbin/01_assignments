@@ -3,16 +3,16 @@
 #
 # how to        = start()
 # dependencies  = Maya
-# to dos        = fix double popups when running "Freeze Transform" while incoming connections
-#                 create a module for the "gathering" of all meshes objects
-# 
+# to dos        = Add 'Report' output, add "Fix" button
+#                 Fix double popups when running "Freeze Transform" while incoming connections
+#
 # author  = Stephane Barbin
 # **************************************************************************************************************
 
 
-
 import os
 import sys
+import yaml
 import importlib
 import maya.OpenMayaUI as omUI
 from shiboken2 import wrapInstance
@@ -22,8 +22,8 @@ from PySide2 import QtCore
 from PySide2 import QtUiTools
 from PySide2 import QtWidgets
 
-import qc_checks_ui
-importlib.reload(qc_checks_ui)
+import qcc_ui
+importlib.reload(qcc_ui)
 
 from qc_modules.modeling import modeling_center
 importlib.reload(modeling_center)
@@ -52,7 +52,6 @@ class QCChecks:
     It gives the user the ability to see a report based on checks that fails, select
     the checks they want to resolve automatically and "Publish" when all checks are "passed".
     """
-
     def __init__(self):
         """
         Initializing
@@ -62,54 +61,163 @@ class QCChecks:
         self.warning_count = 0
         self.failed_count = 0
         self.department_reports = {'Animated Objects': ({}, {'passed': 0, 'warning': 0, 'failed': 0}),
-                                   'Center': ({}, {'passed': 0, 'warning': 0, 'failed': 0}),
+                                   'Center':           ({}, {'passed': 0, 'warning': 0, 'failed': 0}),
                                    'Freeze Transform': ({}, {'passed': 0, 'warning': 0, 'failed': 0}),
-                                   'Scene Cleanup': ({}, {'passed': 0, 'warning': 0, 'failed': 0})}
+                                   'Scene Cleanup':    ({}, {'passed': 0, 'warning': 0, 'failed': 0})}
 
-        # UI
-        (self.wg_qcc,
-         self.fix_this_btn,
-         self.department_menu,
-         self.qc_list_widget,
-         self.run_selected_btn,
-         self.passed_label,
-         self.warning_label,
-         self.failed_label,
-         self.results_window,
-         self.select_all_btn,
-         self.select_none_btn,
-         self.invert_selection_btn,
-         self.publish_btn
-         ) = qc_checks_ui.qc_checks_ui()
-
-        # Getting Maya main window as a QWidget
-        maya_main_window_pointer = omUI.MQtUtil.mainWindow()
-        maya_main_window = wrapInstance(int(maya_main_window_pointer), QtWidgets.QWidget)
-
-        # Parenting QC Checks UI to the Maya main window
-        self.wg_qcc.setParent(maya_main_window)
-        self.wg_qcc.setWindowFlags(QtCore.Qt.Window)
+        # Creating the QCChecksUI instance and show the UI
+        self.qc_ui = qcc_ui.QCChecksUI()
+        self.qc_ui.show()
 
         # Button connections
-        self.fix_this_btn.clicked.connect(lambda: self.department_selection('fix_button'))
-        self.run_selected_btn.clicked.connect(lambda: self.department_selection('run_button'))
-        self.qc_list_widget.itemClicked.connect(self.on_qc_list_clicked)
-        self.select_all_btn.clicked.connect(self.report_output)
-        self.select_none_btn.clicked.connect(self.report_output)
-        self.invert_selection_btn.clicked.connect(self.report_output)
-        self.publish_btn.clicked.connect(self.publish_the_scene)
+        self.qc_ui.run_all_btn.clicked.connect(lambda: self.department_selection('run_button'))
 
-        # Showing the UI
-        self.wg_qcc.show()
 
-    def on_qc_list_clicked(self, item):
+    def department_selection(self, button_flag):
         """
-        Execute the report output if an item is selected
+        Choosing which department's checklist to use
+        """
+        selected_department = self.qc_ui.department_menu.currentText()
+        if selected_department == 'Modeling':
+            self.modeling_checklist(button_flag)
+        elif selected_department == 'Rigging':
+            self.rigging_checklist(button_flag)
+        elif selected_department == 'Animation':
+            self.animation_checklist(button_flag)
+
+    def processing_status(func):
+        """
+        Decorator to update the status text in the UI while a function is running.
+        """
+        def wrapper(self, *args, **kwargs):
+            self.qc_ui.status_label.setText("Processing...")
+            QtWidgets.QApplication.processEvents()
+            result = func(self, *args, **kwargs)
+            self.qc_ui.status_label.setText("Ready")
+            return result
+        return wrapper
+
+    @processing_status
+    def modeling_checklist(self, button_flag):
+        """
+        Performing the Modeling checklist
 
         Args:
-            item (str): The selected check in the QC checklist
+            button_flag (str): Contains info on the button pressed i.e.: 'Run' or 'Fix'
         """
-        self.report_output()
+        checks = self.qc_ui.get_checks()
+        for item in checks['Modeling']:
+            if item == 'Animated Objects':
+                self.status_flag, self.animated_objects_report, self.button_switch = modeling_animated_objects.animated_objects(button_flag)
+                modeling_animated_objects.animated_objects(button_flag)
+                if self.status_flag == 'passed':
+                    self.department_reports[item][1]['passed'] = 1
+                    self.department_reports[item][1]['warning'] = 0
+                    self.department_reports[item][1]['failed'] = 0
+                    self.department_reports_creation(self.animated_objects_report, self.button_switch, button_flag, item)
+                elif self.status_flag == 'warning':
+                    self.department_reports[item][1]['passed'] = 0
+                    self.department_reports[item][1]['warning'] = 1
+                    self.department_reports[item][1]['failed'] = 0
+                elif self.status_flag == 'failed':
+                    self.department_reports[item][1]['passed'] = 0
+                    self.department_reports[item][1]['warning'] = 0
+                    self.department_reports[item][1]['failed'] = 1
+                    self.department_reports_creation(self.animated_objects_report, self.button_switch, button_flag, item)
+            elif item == 'Center':
+                self.status_flag, self.center_report, self.button_switch = modeling_center.meshes_center(button_flag)
+                modeling_center.meshes_center(button_flag)
+                if self.status_flag == 'passed':
+                    self.department_reports[item][1]['passed'] = 1
+                    self.department_reports[item][1]['warning'] = 0
+                    self.department_reports[item][1]['failed'] = 0
+                    self.department_reports_creation(self.center_report, self.button_switch, button_flag, item)
+                elif self.status_flag == 'warning':
+                    self.department_reports[item][1]['passed'] = 0
+                    self.department_reports[item][1]['warning'] = 1
+                    self.department_reports[item][1]['failed'] = 0
+                elif self.status_flag == 'failed':
+                    self.department_reports[item][1]['passed'] = 0
+                    self.department_reports[item][1]['warning'] = 0
+                    self.department_reports[item][1]['failed'] = 1
+                    self.department_reports_creation(self.center_report, self.button_switch, button_flag, item)
+            elif item == 'Freeze Transform':
+                self.status_flag, self.xform_report, self.button_switch = modeling_xform.meshes_xform(button_flag)
+                modeling_xform.meshes_xform(button_flag)
+                if self.status_flag == 'passed':
+                    self.department_reports[item][1]['passed'] = 1
+                    self.department_reports[item][1]['warning'] = 0
+                    self.department_reports[item][1]['failed'] = 0
+                    self.department_reports_creation(self.xform_report, self.button_switch, button_flag, item)
+                elif self.status_flag == 'warning':
+                    self.department_reports[item][1]['passed'] = 0
+                    self.department_reports[item][1]['warning'] = 1
+                    self.department_reports[item][1]['failed'] = 0
+                elif self.status_flag == 'failed':
+                    self.department_reports[item][1]['passed'] = 0
+                    self.department_reports[item][1]['warning'] = 0
+                    self.department_reports[item][1]['failed'] = 1
+                    self.department_reports_creation(self.xform_report, self.button_switch, button_flag, item)
+            elif item == 'Scene Cleanup':
+                self.status_flag, self.cleanup_report, self.button_switch = modeling_scene_cleanup.illegal_cleanup(
+                    button_flag)
+                modeling_scene_cleanup.illegal_cleanup(button_flag)
+                if self.status_flag == 'passed':
+                    self.department_reports[item][1]['passed'] = 1
+                    self.department_reports[item][1]['warning'] = 0
+                    self.department_reports[item][1]['failed'] = 0
+                    self.department_reports_creation(self.cleanup_report, self.button_switch, button_flag, item)
+                elif self.status_flag == 'warning':
+                    self.department_reports[item][1]['passed'] = 0
+                    self.department_reports[item][1]['warning'] = 1
+                    self.department_reports[item][1]['failed'] = 0
+                elif self.status_flag == 'failed':
+                    self.department_reports[item][1]['passed'] = 0
+                    self.department_reports[item][1]['warning'] = 0
+                    self.department_reports[item][1]['failed'] = 1
+                    self.department_reports_creation(self.cleanup_report, self.button_switch, button_flag, item)
+
+
+    def rigging_checklist(self):
+        """
+        Performing the Rigging checklist
+        """
+        qc_items = self.qc_list_widget.selectedItems()
+        for item in qc_items:
+            if item == 'Animated Objects':
+                pass
+            elif item == 'Control Shape Consistency':
+                pass
+            elif item == 'Controllers Naming':
+                pass
+            elif item == 'Joints Influence Count':
+                pass
+            elif item == 'Joints Naming':
+                pass
+            elif item == 'Layer Organization':
+                pass
+            elif item == 'Scene Cleanup':
+                pass
+
+
+    def animation_checklist(self):
+        """
+        Performing the Animation checklist for what the user have selected
+        """
+        qc_items = self.qc_list_widget.selectedItems()
+        for item in qc_items:
+            if item == 'In-Betweens':
+                pass
+            elif item == 'Keyframe Analysis':
+                pass
+            elif item == 'Layer Organization':
+                pass
+            elif item == 'Redundant Keyframes':
+                pass
+            elif item == 'Rigging Checks':
+                pass
+            elif item == 'Scene Cleanup':
+                pass
 
 
     def department_reports_creation(self, report, button_switch, button_flag, item_text):
@@ -171,174 +279,18 @@ class QCChecks:
         self.warning_count = 0
         self.failed_count = 0
         # Getting the report from the department report dictionary
-        qc_items = self.qc_list_widget.selectedItems()
-        self.results_window.clear()
-        if qc_items:
-            qc_items_names = []
-            for selected in qc_items:
-                qc_items_names.append(selected.text())
-            for item in qc_items_names:
-                for secondary_key in self.department_reports[item][0]:
-                    report_string = '<br>'.join(self.department_reports[item][0][secondary_key][0])
-                    # Output report in UI
-                    self.results_window.append(report_string)
-                    self.results_window.append('')
-        # Getting the status counts
-        for qc_checks in self.department_reports.keys():
-            if self.department_reports[qc_checks][1]['passed'] == 1:
-                self.passed_count += 1
-            if self.department_reports[qc_checks][1]['warning'] == 1:
-                self.warning_count += 1
-            if self.department_reports[qc_checks][1]['failed'] == 1:
-                self.failed_count += 1
-        # Changing status labels in the UI
-        self.passed_label.setText('Passed: ' + str(self.passed_count))
-        self.warning_label.setText('Warning: ' + str(self.warning_count))
-        self.failed_label.setText('Failed: ' + str(self.failed_count))
+        qc_items = self.qc_ui.get_checks()
+        for item in qc_items['Modeling']:
+            for secondary_key in self.department_reports[item][0]:
+                report_string = '<br>'.join(self.department_reports[item][0][secondary_key][0])
+                # Output report in UI
+                #self.results_window.append(report_string)
+                #self.results_window.append('')
+            self.qc_ui.update_status_color(item, self.status_flag)
+
 
     def publish_the_scene(self):
         save_increment.increment_version_scene()
-
-    def department_selection(self, button_flag):
-        """
-        Choose which department's checklist to use
-        """
-        selected_department = self.department_menu.currentText()
-        if selected_department == 'Modeling':
-            self.modeling_checklist(button_flag)
-        elif selected_department == 'Rigging':
-            self.rigging_checklist(button_flag)
-        elif selected_department == 'Animation':
-            self.animation_checklist(button_flag)
-
-
-    def modeling_checklist(self, button_flag):
-        """
-        Performing the Modeling checklist for what the user have selected
-
-        Args:
-            button_flag (str): Contains info on the button pressed i.e.: 'Run' or 'Fix'
-        """
-        # Going through the selected checklist
-        qc_items = self.qc_list_widget.selectedItems()
-        for item in qc_items:
-            if item.text() == 'Animated Objects':
-                self.status_flag, self.animated_objects_report, self.button_switch = modeling_animated_objects.animated_objects(
-                    button_flag)
-                modeling_animated_objects.animated_objects(button_flag)
-                if self.status_flag == 'passed':
-                    self.department_reports[item.text()][1]['passed'] = 1
-                    self.department_reports[item.text()][1]['warning'] = 0
-                    self.department_reports[item.text()][1]['failed'] = 0
-                    self.department_reports_creation(self.animated_objects_report, self.button_switch, button_flag,
-                                                     item.text())
-                elif self.status_flag == 'warning':
-                    self.department_reports[item.text()][1]['passed'] = 0
-                    self.department_reports[item.text()][1]['warning'] = 1
-                    self.department_reports[item.text()][1]['failed'] = 0
-                elif self.status_flag == 'failed':
-                    self.department_reports[item.text()][1]['passed'] = 0
-                    self.department_reports[item.text()][1]['warning'] = 0
-                    self.department_reports[item.text()][1]['failed'] = 1
-                    self.department_reports_creation(self.animated_objects_report, self.button_switch, button_flag,
-                                                     item.text())
-            elif item.text() == 'Center':
-                self.status_flag, self.center_report, self.button_switch = modeling_center.meshes_center(button_flag)
-                modeling_center.meshes_center(button_flag)
-                if self.status_flag == 'passed':
-                    self.department_reports[item.text()][1]['passed'] = 1
-                    self.department_reports[item.text()][1]['warning'] = 0
-                    self.department_reports[item.text()][1]['failed'] = 0
-                    self.department_reports_creation(self.center_report, self.button_switch, button_flag, item.text())
-                elif self.status_flag == 'warning':
-                    self.department_reports[item.text()][1]['passed'] = 0
-                    self.department_reports[item.text()][1]['warning'] = 1
-                    self.department_reports[item.text()][1]['failed'] = 0
-                elif self.status_flag == 'failed':
-                    self.department_reports[item.text()][1]['passed'] = 0
-                    self.department_reports[item.text()][1]['warning'] = 0
-                    self.department_reports[item.text()][1]['failed'] = 1
-                    self.department_reports_creation(self.center_report, self.button_switch, button_flag, item.text())
-            elif item.text() == 'Freeze Transform':
-                self.status_flag, self.xform_report, self.button_switch = modeling_xform.meshes_xform(button_flag)
-                modeling_xform.meshes_xform(button_flag)
-                if self.status_flag == 'passed':
-                    self.department_reports[item.text()][1]['passed'] = 1
-                    self.department_reports[item.text()][1]['warning'] = 0
-                    self.department_reports[item.text()][1]['failed'] = 0
-                    self.department_reports_creation(self.xform_report, self.button_switch, button_flag, item.text())
-                elif self.status_flag == 'warning':
-                    self.department_reports[item.text()][1]['passed'] = 0
-                    self.department_reports[item.text()][1]['warning'] = 1
-                    self.department_reports[item.text()][1]['failed'] = 0
-                elif self.status_flag == 'failed':
-                    self.department_reports[item.text()][1]['passed'] = 0
-                    self.department_reports[item.text()][1]['warning'] = 0
-                    self.department_reports[item.text()][1]['failed'] = 1
-                    self.department_reports_creation(self.xform_report, self.button_switch, button_flag, item.text())
-            elif item.text() == 'Scene Cleanup':
-                self.status_flag, self.cleanup_report, self.button_switch = modeling_scene_cleanup.illegal_cleanup(
-                    button_flag)
-                modeling_scene_cleanup.illegal_cleanup(button_flag)
-                if self.status_flag == 'passed':
-                    self.department_reports[item.text()][1]['passed'] = 1
-                    self.department_reports[item.text()][1]['warning'] = 0
-                    self.department_reports[item.text()][1]['failed'] = 0
-                    self.department_reports_creation(self.cleanup_report, self.button_switch, button_flag, item.text())
-                elif self.status_flag == 'warning':
-                    self.department_reports[item.text()][1]['passed'] = 0
-                    self.department_reports[item.text()][1]['warning'] = 1
-                    self.department_reports[item.text()][1]['failed'] = 0
-                elif self.status_flag == 'failed':
-                    self.department_reports[item.text()][1]['passed'] = 0
-                    self.department_reports[item.text()][1]['warning'] = 0
-                    self.department_reports[item.text()][1]['failed'] = 1
-                    self.department_reports_creation(self.cleanup_report, self.button_switch, button_flag, item.text())
-
-    # Function for the rigging checklist
-    def rigging_checklist(self):
-        """
-        Performing the Rigging checklist for what the user have selected
-        """
-        # Going through the selected checklist
-        qc_items = self.qc_list_widget.selectedItems()
-        for item in qc_items:
-            if item.text() == 'Animated Objects':
-                pass
-            elif item.text() == 'Control Shape Consistency':
-                pass
-            elif item.text() == 'Controllers Naming':
-                pass
-            elif item.text() == 'Joints Influence Count':
-                pass
-            elif item.text() == 'Joints Naming':
-                pass
-            elif item.text() == 'Layer Organization':
-                pass
-            elif item.text() == 'Scene Cleanup':
-                pass
-
-    # Function for the animation checklist
-    def animation_checklist(self):
-        """
-        Performing the Animation checklist for what the user have selected
-        """
-        # Going through the selected checklist
-        qc_items = self.qc_list_widget.selectedItems()
-        for item in qc_items:
-            if item.text() == 'In-Betweens':
-                pass
-            elif item.text() == 'Keyframe Analysis':
-                pass
-            elif item.text() == 'Layer Organization':
-                pass
-            elif item.text() == 'Redundant Keyframes':
-                pass
-            elif item.text() == 'Rigging Checks':
-                pass
-            elif item.text() == 'Scene Cleanup':
-                pass
-
 
 
 def start():
