@@ -12,7 +12,6 @@
 
 import os
 import sys
-import yaml
 import importlib
 import maya.OpenMayaUI as omUI
 from shiboken2 import wrapInstance

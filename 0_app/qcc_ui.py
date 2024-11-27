@@ -13,36 +13,17 @@ from PySide2 import QtWidgets, QtCore, QtGui
 
 
 class QCCheckItemWidget(QtWidgets.QWidget):
-    '''
-    Reasons for choosing classes:
-
-    Encapsulation:
-    Functions and widgets were scattered and less contained. Now, ‘QCCheckItemWidget’ class encapsulates
-    all the elements of a single check item (like status indicators, labels, and buttons).  This makes
-    each check an independent, reusable component, simplifying updates and maintenance
-
-    Modularity and Reusability:
-    Modular, reusable components that can be imported or used elsewhere in the application. Useful if you
-    add new departments or QC check categories with unique widgets.
-
-    Simplified State Management:
-    Managing and updating UI elements, like check statuses, was less intuitive without classes. Encapsulation
-    allows easy state updates for each item without affecting others.
-
-    Improved Debugging:
-    Less global variables or parameters passed around, which made things difficult to debug.
-    '''
     def __init__(self, check_name):
         super().__init__()
 
         self.setFixedHeight(30)
 
-        # Main layout for the check item
+        # Main layout
         layout = QtWidgets.QHBoxLayout(self)
         layout.setContentsMargins(5, 5, 5, 5)
         layout.setSpacing(0)
 
-        # Container widget and layout for status indicator and check name
+        # status indicator and check name
         container = QtWidgets.QWidget()
         container_layout = QtWidgets.QHBoxLayout(container)
         container_layout.setContentsMargins(215, 0, 0, 0)  # Control horizontal start position
@@ -99,7 +80,7 @@ class QCChecksUI(QtWidgets.QWidget):
         self.department_menu.currentIndexChanged.connect(self.load_checks)
         main_layout.addWidget(self.department_menu)
 
-        # Area for listing the checks
+        # CHECKS area
         self.checks_layout = QtWidgets.QVBoxLayout()
         self.checks_layout.setSpacing(0)
         self.checks_layout.setContentsMargins(15, 15, 15, 15)
@@ -113,28 +94,23 @@ class QCChecksUI(QtWidgets.QWidget):
         self.scroll_area.setWidgetResizable(True)
         main_layout.addWidget(self.scroll_area)
 
-        # RUN button
-        button_layout = QtWidgets.QHBoxLayout()
-        button_layout.setContentsMargins(0, 0, 0, 0)
-        button_layout.setAlignment(QtCore.Qt.AlignRight)
-
-        self.run_all_btn = QtWidgets.QPushButton('Run')
-        self.run_all_btn.setFixedWidth(100)
-        button_layout.addWidget(self.run_all_btn)
-
-        main_layout.addLayout(button_layout)
-
-        # PROCESSING label
-        status_layout = QtWidgets.QHBoxLayout()
-        status_layout.setContentsMargins(0, 0, 0, 0)
-        status_layout.setSpacing(10)
-        status_layout.setAlignment(QtCore.Qt.AlignLeft)
+        # PROCESSING label and RUN button
+        combined_layout = QtWidgets.QHBoxLayout()
+        combined_layout.setContentsMargins(0, 0, 0, 0)
+        combined_layout.setSpacing(10)  # Space between widgets
 
         self.status_label = QtWidgets.QLabel("Ready")
         self.status_label.setAlignment(QtCore.Qt.AlignVCenter)
-        status_layout.addWidget(self.status_label)
+        combined_layout.addWidget(self.status_label, alignment=QtCore.Qt.AlignLeft)
 
-        main_layout.addLayout(status_layout)
+        spacer = QtWidgets.QSpacerItem(0, 0, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        combined_layout.addItem(spacer)
+
+        self.run_all_btn = QtWidgets.QPushButton('Run')
+        self.run_all_btn.setFixedWidth(100)
+        combined_layout.addWidget(self.run_all_btn, alignment=QtCore.Qt.AlignRight)
+
+        main_layout.addLayout(combined_layout)
 
         self.load_checks()
 
