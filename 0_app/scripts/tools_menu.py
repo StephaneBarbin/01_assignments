@@ -12,7 +12,7 @@ import importlib
 
 # Initializing variables
 MENU_NAME = 'Demo Tools'
-IMG_PATH  = r"F:\_python\02_python_advanced\01_work\01_assignments\0_app\icons"
+IMG_PATH  = r"F:\_python\02_python_advanced\01_work\01_assignments\0_app\img"
 
 
 # Menu
@@ -26,7 +26,7 @@ def custom_menu():
     submenu = cmds.menuItem(parent = menu, subMenu = True, label='Assets')
 
     # QC Checks submenu
-    cmds.menuItem(parent = submenu, label = 'QC Checks', command = 'import qc_checks_main; qc_checks_main.start()')
+    cmds.menuItem(parent = submenu, label = 'QC Checks', command = 'import qc; qc.start()')
 
     # Documentation submenu
     cmds.menuItem(parent = submenu, label = 'Documentation', command = 'import webbrowser; webbrowser.open("file:///F:/_python/02_python_advanced/01_work/01_assignments/0_app/documents/Quality%20Control%20Checks%20Documentation.pdf")')
@@ -44,7 +44,7 @@ def delete_custom_menu():
 
 
 def shelf_button_command():
-    reload_and_run('qc_checks_main')
+    reload_and_run('qc')
 
 
 
@@ -54,10 +54,15 @@ def custom_shelf():
 
     shelf = cmds.shelfLayout(MENU_NAME, parent = "ShelfLayout")
 
+    icon_command = ('import importlib; '
+                    'import qc; '
+                    'importlib.reload(qc); '
+                    'qc.start()')
+
     cmds.shelfButton(parent = shelf,
                      annotation = 'Asset Quality Control Checks',
                      image1 = IMG_PATH + "\checker.png",
-                     command = 'import importlib; import qc_checks_main; importlib.reload(qc_checks_main); qc_checks_main.start()')
+                     command = icon_command)
 
 
 # Delete shel if exists

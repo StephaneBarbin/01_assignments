@@ -1,0 +1,45 @@
+Modeling:
+    Animated Objects:
+        - This check reports any unintended animation keys on objects in the scene.
+        - Below are the object names and their animated attributes.
+        - Delete the animated keys manually or go back to the main menu and click the fix button.
+    Center:
+        - This check reports any non-centered objects.
+        - Below are the object names and their position attributes.
+        - Center the objects mannually or go back to the main menu and click the fix button.
+    Freeze Transform:
+        - This check reports any objects that has rotation or scale values.
+        - Below are the object names and their rotation and/or scale attributes.
+        - Perform a manual Freeze Transform or go back to the main menu and click the fix button.
+    Scene Cleanup:
+        - This check reports any illegal objects present in the scene.
+        - Below are the illegal object names.
+        - Manually delete the illegal objects or go back to the main menu and click the fix button.
+Rigging:
+    Animated Objects:
+        - Temporary text.
+    Control Shape Consistency:
+        - Temporary text.
+    Controllers Naming:
+        - Temporary text.
+    Joints Influence Count:
+        - Temporary text.
+    Layer Organization:
+        - Temporary text.
+    Scene Cleanup:
+        - Temporary text.
+    Joints Naming:
+        - Temporary text.
+Animation:
+    Keyframe Analysis:
+        - Temporary text.
+    In-Betweens:
+        - Temporary text.
+    Rigging Checks:
+        - Temporary text.
+    Redundant Keyframes:
+        - Temporary text.
+    Scene Cleanup:
+        - Temporary text.
+    Layer Organization:
+        - Temporary text.

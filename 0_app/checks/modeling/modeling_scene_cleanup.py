@@ -1,21 +1,14 @@
 # **************************************************************************************************************
 # content       = checks for modeling department's illegal objects
 #
-# how to        =
 # dependencies  = Maya
-# to dos        =
 #
 # author  = Stephane Barbin
 # **************************************************************************************************************
 
-
-
 import maya.cmds as cmds
 
-
-
 # **************************************************************************************************************
-
 
 
 def illegal_cleanup(button_clicked):
@@ -34,10 +27,8 @@ def illegal_cleanup(button_clicked):
     default_cameras = ['persp', 'top', 'front', 'side']
     button_switch = 0
 
-    # Getting all top-level transforms in the scene
     top_level_objects = cmds.ls(assemblies=True)
 
-    # List of objects other than "mesh" type for the qc check
     illegal_objects = []
 
     for top_object in top_level_objects:
@@ -50,14 +41,11 @@ def illegal_cleanup(button_clicked):
 
     # Running the check
     if button_clicked == 'run_button':
-        # Dictionary and list for the report
         cleanup_report = {}
         report_list = []
         comma_counter = 0
 
-        # Check if illegal object list not empty
         if illegal_objects:
-            # Check has failed
             status_flag = 'failed'
 
             # Filling the list report
@@ -79,7 +67,6 @@ def illegal_cleanup(button_clicked):
 
     # Running the fix
     elif button_clicked == 'fix_button':
-        # Initializing for the fix pass
         status_flag = 'passed'
         cleanup_report = {}
         report_list = []

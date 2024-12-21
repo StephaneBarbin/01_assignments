@@ -1,21 +1,14 @@
 # **************************************************************************************************************
 # content       = checks if the asset has rotation or scale values
 #
-# how to        =
 # dependencies  = Maya
-# to dos        =
 #
 # author  = Stephane Barbin
 # **************************************************************************************************************
 
-
-
 import maya.cmds as cmds
 
-
-
 # **************************************************************************************************************
-
 
 
 def meshes_xform(button_clicked):
@@ -35,7 +28,6 @@ def meshes_xform(button_clicked):
     default_cameras = ['persp', 'top', 'front', 'side']
     button_switch = 0
 
-    # Getting all top-level transforms in the scene
     top_level_objects = cmds.ls(assemblies=True)
 
     # List of "mesh" type objects for the qc check
@@ -51,7 +43,6 @@ def meshes_xform(button_clicked):
 
     # Running the check
     if button_clicked == 'run_button':
-        # Dictionary and list for the report
         xform_report = {}
         report_list = []
 
@@ -79,18 +70,15 @@ def meshes_xform(button_clicked):
 
             # If there's values
             if (asset_rotx != 0 or asset_roty != 0 or asset_rotz != 0) or (asset_scalex != 1 or asset_scaley != 1 or asset_scalez != 1):
-                # Check has failed
                 status_flag = 'failed'
 
                 # Filling the list report
                 if asset_rotx != 0 or asset_roty != 0 or asset_rotz != 0:
-                    # Filling the report for rotation
                     if transform not in xform_report:
                         xform_report[transform] = []
                     report_list.append("<b style='color:rgb(255,0,0);'>Freeze Transform failed:</b> " + 'Object ' + str(transform) + ' rotation ' + 'is: ' + str(asset_rotx_rounded) + ' ,' + str(asset_roty_rounded) + ' ,' + str(asset_rotz_rounded))
                     xform_report[transform].append(report_list)
                 if (asset_scalex != 1 or asset_scaley != 1 or asset_scalez != 1):
-                    # Filling the list report for scale
                     if transform not in xform_report:
                         xform_report[transform] = []
                     report_list.append("<b style='color:rgb(255,0,0);'>Freeze Transform failed:</b> " + 'Object ' + str(transform) + ' scale ' + 'is: ' + str(asset_scalex_rounded) + ' ,' + str(asset_scaley_rounded) + ' ,' + str(asset_scalez_rounded))
@@ -100,7 +88,6 @@ def meshes_xform(button_clicked):
         
     # Running the fix
     elif button_clicked == 'fix_button':
-        # Initializing for the fix pass
         report_list = []
                 
         # Performing rotate and scale xform
@@ -122,7 +109,6 @@ def meshes_xform(button_clicked):
                    failed_attributes.append(attr)
 
             if failed_attributes:
-                # Dictionary and list for the report
                 xform_report = {}
                 report_list = []
 
@@ -150,18 +136,15 @@ def meshes_xform(button_clicked):
 
                     # If there's values
                     if (asset_rotx != 0 or asset_roty != 0 or asset_rotz != 0) or (asset_scalex != 1 or asset_scaley != 1 or asset_scalez != 1):
-                        # Check has failed
                         status_flag = 'failed'
 
                         # Filling the list report
                         if asset_rotx != 0 or asset_roty != 0 or asset_rotz != 0:
-                            # Filling the report for rotation
                             if transform not in xform_report:
                                 xform_report[transform] = []
                             report_list.append("<b style='color:rgb(255,0,0);'>Freeze Transform failed:</b> " + 'Object ' + str(transform) + ' rotation ' + 'is: ' + str(asset_rotx_rounded) + ' ,' + str(asset_roty_rounded) + ' ,' + str(asset_rotz_rounded))
                             xform_report[transform].append(report_list)
                         if (asset_scalex != 1 or asset_scaley != 1 or asset_scalez != 1):
-                            # Filling the list report for scale
                             if transform not in xform_report:
                                 xform_report[transform] = []
                             report_list.append("<b style='color:rgb(255,0,0);'>Freeze Transform failed:</b> " + 'Object ' + str(transform) + ' scale ' + 'is: ' + str(asset_scalex_rounded) + ' ,' + str(asset_scaley_rounded) + ' ,' + str(asset_scalez_rounded))

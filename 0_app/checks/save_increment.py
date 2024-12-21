@@ -1,30 +1,21 @@
 # **************************************************************************************************************
 # content       = increment save (for now)
 #
-# how to        =
 # dependencies  = Maya
-# to dos        =
 #
 # author  = Stephane Barbin
 # **************************************************************************************************************
 
-
-
 import os
-
 import maya.cmds as cmds
 
-
-
 # **************************************************************************************************************
-
 
 
 def increment_version_scene():
     
     open_file_path = cmds.file(query=True, sceneName=True)
 
-    # If not saved
     if not open_file_path:
         message = 'Scene needs to be saved'
         cmds.confirmDialog(title='Warning', message=message, button=['Ok'])

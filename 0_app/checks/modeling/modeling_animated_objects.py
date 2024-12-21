@@ -1,26 +1,19 @@
 # **************************************************************************************************************
 # content       = checks if the asset has keyframes
 #
-# how to        =
 # dependencies  = Maya
-# to dos        =
 #
 # author  = Stephane Barbin
 # **************************************************************************************************************
 
-
-
 import maya.cmds as cmds
-
-
 
 # **************************************************************************************************************
 
 
-
 def list_animated_attributes(obj):
     """
-    Returns information about animation keys on meshes object in scene
+    Returns information about animation keys on mesh objects in scene
 
     Args:
         obj (str): mesh object's name
@@ -28,23 +21,19 @@ def list_animated_attributes(obj):
     Returns:
         list: names of the mesh object's animated attributes
     """
-    # Getting all animatable attributes of the object
     animatable_attrs = cmds.listAnimatable(obj)
-    
     animated_attributes = []
 
     # Checking each animatable attribute to see if it has keyframes
     for attr in animatable_attrs:
         keyframes = cmds.keyframe(attr, query=True)
         if keyframes:
-            # Extract the attribute name from the full path
             attribute_name = attr.split(".")[-1]
             animated_attributes.append(attribute_name)
 
     return animated_attributes
 
 
-# Function to delete keyframes
 def delete_keyframes(obj, attribute):
     full_attribute = obj + '.' + attribute
     cmds.cutKey(full_attribute, clear=True)
@@ -66,10 +55,8 @@ def animated_objects(button_clicked):
     default_cameras = ['persp', 'top', 'front', 'side']
     button_switch = 0
 
-    # Getting all top-level transforms in the scene
     top_level_objects = cmds.ls(assemblies=True)
 
-    # List of "mesh" type objects for the qc check
     polygon_meshes = []
 
     for top_object in top_level_objects:
@@ -82,7 +69,6 @@ def animated_objects(button_clicked):
 
     # Running the check
     if button_clicked == 'run_button':
-        # Dictionary and list for the report
         animated_objects_report = {}
         report_list = []
         
@@ -93,9 +79,7 @@ def animated_objects(button_clicked):
             # Calling function to retrieve attributes
             animated_attribs = list_animated_attributes(transform)
 
-            # If there are animated attributes
             if animated_attribs:
-                # Check has failed
                 status_flag = 'failed'
 
                 # Creating a list to add to the end of the list report
@@ -113,7 +97,6 @@ def animated_objects(button_clicked):
     
     # Running the fix    
     elif button_clicked == 'fix_button':
-        # Initializing for the fix pass
         status_flag = 'passed'
         animated_objects_report = {}
         report_list = []

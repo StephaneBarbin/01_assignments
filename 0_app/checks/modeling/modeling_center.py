@@ -1,21 +1,14 @@
 # **************************************************************************************************************
 # content       = checks if the asset is in the world center
 #
-# how to        =
 # dependencies  = Maya
-# to dos        =
 #
 # author  = Stephane Barbin
 # **************************************************************************************************************
 
-
-
 import maya.cmds as cmds
 
-
-
 # **************************************************************************************************************
-
 
 
 def meshes_center(button_clicked):
@@ -30,12 +23,10 @@ def meshes_center(button_clicked):
         dict: Report of names and translation coordinates info of each object when check fails
         int: A flag sent back to the main: 0 for passed, 1 for failed
     """
-    # Initializing
     status_flag = 'passed'
     default_cameras = ['persp', 'top', 'front', 'side']
     button_switch = 0
 
-    # Getting all top-level transforms in the scene
     top_level_objects = cmds.ls(assemblies=True)
 
     # List of "mesh" type objects for the qc check
@@ -51,7 +42,6 @@ def meshes_center(button_clicked):
 
     # Running the check
     if button_clicked == 'run_button':
-        # Dictionary and list for the report
         center_report = {}
         report_list = []
 
@@ -70,7 +60,6 @@ def meshes_center(button_clicked):
 
             # If not in center of word
             if asset_posx != 0 or asset_posy != 0 or asset_posz != 0:
-                # Check has failed
                 status_flag = 'failed'
 
                 # Filling the list report
@@ -83,7 +72,6 @@ def meshes_center(button_clicked):
         
     # Running the fix
     elif button_clicked == 'fix_button':
-        # Initializing for the fix pass
         status_flag = 'passed'
         center_report = {}
         report_list = []
